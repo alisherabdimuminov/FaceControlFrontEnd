@@ -1,9 +1,33 @@
 
 <script setup lang="ts">
+import type { IEmployee, IResponse } from '~/types';
+
 
 
 definePageMeta({
     middleware: ["is-auth"]
+});
+
+const { user } = useAuth();
+const route = useRoute();
+
+const employees = ref<IEmployee[]>([]);
+
+const getEmployees = async (department: string) => {
+    // isLoading.value = true;
+    let response = await $fetch<IResponse<{}, IEmployee[]>>(apify("employees") + `?department=${department}`, {
+        headers: {
+            "Authorization": `Token ${user.value?.token}`
+        }
+    });
+    if (response.status === "success") {
+        employees.value = response.data;
+    }
+    // isLoading.value = false;
+}
+
+onMounted(() => {
+    getEmployees(route.params.slug.toString());
 });
 </script>
 
@@ -34,9 +58,9 @@ definePageMeta({
                     </tr>
                 </thead>
                 <tbody class="relative">
-                    <tr class="border hover:bg-accent/90" v-for="_ in 10">
-                        <td class="p-2 border sticky left-0 bg-background w-32 truncate">Abdimuminov Alisher Baxodir o'g'li</td>
-                        <td class="p-2 border text-center text-green-500 font-bold" v-for="_ in 30">-</td>
+                    <tr class="border hover:bg-accent/90" v-for="employee in employees">
+                        <td class="p-2 border sticky left-0 bg-background w-32 truncate">{{ employee.full_name }}</td>
+                        <td class="p-2 border text-center text-green-500 font-bold" v-for="_ in 30">8</td>
                         <td class="sticky right-0 p-2 border bg-background text-center">345</td>
                     </tr>
                 </tbody>

@@ -180,7 +180,7 @@ onMounted(() => {
                             <DropdownMenuGroup>
                                 <DropdownMenuItem>
                                     <LucideUser2 :size="16" />
-                                    <span>Alisher Abdimuminov</span>
+                                    <span>{{ user?.first_name }} {{ user?.last_name }}</span>
                                 </DropdownMenuItem>
                             </DropdownMenuGroup>
                             <DropdownMenuSeparator />
