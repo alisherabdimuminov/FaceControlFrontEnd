@@ -202,6 +202,15 @@ onMounted(async () => {
                             title: "Ogohlantirish",
                             description: hu("p", { class: "text-red-500" }, "Kechirasiz, yuzlar mos kelmadi. Qaytadan urinib ko'ring")
                         });
+                    } else if (response.code === "404") {
+                        toast({
+                            title: "Ogohlantirish",
+                            description: hu("p", { class: "text-red-500" }, "Kechirasiz, xodim topilmadi. Qaytadan urinib ko'ring")
+                        });
+                        enableWebcamButton.innerText = "Qayta urinish";
+                        enableWebcamButton.addEventListener("click", () =>  {
+                            navigateTo("/");
+                        });
                     }
                 }
                 clearTimeout(timeout);

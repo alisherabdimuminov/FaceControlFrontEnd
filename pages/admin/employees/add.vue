@@ -35,6 +35,41 @@ const employee = ref<IEmployee>({
     uuid: "",
     working_time: ""
 });
+const citiesList = ref([
+    "Andijon",
+    "Buxoro",
+    "Farg'ona",
+    "Jizzax",
+    "Namangan",
+    "Navoiy",
+    "Qashqadaryo",
+    "Qoraqalpog'iston Respublikasi",
+    "Samarqand",
+    "Sirdaryo",
+    "Surxondaryo",
+    "Toshkent",
+    "Toshkent shahri",
+    "Xorazm",
+]);
+const countries = ref([
+    {
+        "name": "O'zbekiston",
+        "flag": "🇺🇿",
+    },
+    {
+        "name": "Rossiya",
+        "flag": "🇷🇺",
+    },
+    {
+        "name": "Qozog'iston",
+        "flag": "🇰🇿"
+    },
+    {
+        "name": "Tojikiston",
+        "flag": "🇹🇯",
+    }
+]);
+
 
 onMounted(() => {
     const image = document.getElementById("image") as HTMLImageElement;
@@ -58,6 +93,10 @@ onMounted(() => {
         }
     });
 });
+
+const genPassword = () => {
+    employee.value.handle = usePassword();
+}
 
 
 const addEmployee = async () => {
@@ -167,7 +206,7 @@ const addEmployee = async () => {
                             <div class="relative">
                                 <Input v-model="employee.handle" />
                                 <div class="absolute flex items-center justify-center w-8 h-8 top-0 right-0">
-                                    <LucideRefreshCcw :size="25" class="hover:bg-accent rounded p-1" /> 
+                                    <LucideRefreshCcw @click="genPassword" :size="25" class="hover:bg-accent rounded p-1" /> 
                                 </div>
                             </div>
                         </div>
@@ -233,14 +272,20 @@ const addEmployee = async () => {
                                 <SelectValue placeholder="Davlatni tanlang" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="o'zbeksiton">O'zbekiston</SelectItem>
-                                <SelectItem value="rossiya">Rossiya</SelectItem>
+                                <SelectItem v-for="country in countries" :value="country.name">{{ country.flag }} {{ country.name }}</SelectItem>
                             </SelectContent>
                         </Select>
                     </div>
                     <div>
                         <Label>Viloyat</Label>
-                        <Input v-model="employee.city" />
+                        <Select v-model="employee.city">
+                            <SelectTrigger>
+                                <SelectValue placeholder="Viloyatni tanlang" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem v-for="city in citiesList" :value="city">{{ city }}</SelectItem>
+                            </SelectContent>
+                        </Select>
                     </div>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
