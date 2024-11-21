@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { LucideRefreshCcw } from 'lucide-vue-next';
+import Select from '~/components/ui/select/Select.vue';
 import { toast } from '~/components/ui/toast';
-import type { IEmployee, IResponse } from '~/types';
+import type { IDepartment, IEmployee, IResponse } from '~/types';
 
 
 definePageMeta({
@@ -14,6 +15,7 @@ useHead({
 const { user } = useAuth();
 
 const isLoading = ref(false);
+const departments = ref<IDepartment[]>([]);
 const employee = ref<IEmployee>({
     address: "",
     birth_date: "",
@@ -72,6 +74,7 @@ const countries = ref([
 
 
 onMounted(() => {
+    getDepartments();
     const image = document.getElementById("image") as HTMLImageElement;
     document.addEventListener("paste", (event) => {
         const items = event.clipboardData?.items;
@@ -96,6 +99,30 @@ onMounted(() => {
 
 const genPassword = () => {
     employee.value.handle = usePassword();
+}
+
+const getDepartments = async () => {
+    try {
+        let response = await $fetch<IResponse<{}, IDepartment[]>>(apify("employees/departments"), {
+            headers: {
+                "Authorization": `Token ${user.value?.token}`
+            }
+        });
+
+        if (response.status === "success") {
+            departments.value = response.data;
+        } else {
+            toast({
+                title: "Xatolik",
+                description: "Adminga murojat qiling"
+            });
+        }
+    } catch {
+        toast({
+            title: "Xatolik",
+            description: "Adminga murojat qiling"
+        });
+    }
 }
 
 
@@ -244,7 +271,14 @@ const addEmployee = async () => {
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div>
                         <Label>Bo'lim <span class="text-red-500">*</span></Label>
-                        <Input v-model="employee.department.id" />
+                        <Select v-model="employee.department.id">
+                            <SelectTrigger>
+                                <SelectValue placeholder="Bo'limni tanlang"/>
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem v-for="department in departments" :value="department.id">{{ department.name }}</SelectItem>
+                            </SelectContent>
+                        </Select>
                     </div>
                     <div>
                         <Label>Lavozimi <span class="text-red-500">*</span></Label>
