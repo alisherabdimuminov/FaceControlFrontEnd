@@ -58,7 +58,7 @@ const error = (err: GeolocationPositionError) => {
 const sendViaQuery = async (lon: number, lat: number) => {
     longitude.value = lon;
     latitude.value = lat;
-    let response = await $fetch<{ status: "success" | "error", code: string, data: object }>(config.public.api + "location/", {
+    let response = await $fetch<{ status: "success" | "error", code: string, data: object }>(apify("location"), {
         method: "POST",
         body: JSON.stringify({
             longitude: longitude.value,
@@ -84,7 +84,7 @@ const sendViaQuery = async (lon: number, lat: number) => {
 }
 
 const loginWithPassport = async () => {
-    let response = await $fetch<{ status: "success" | "error", code: string, data: { user_id: number } | null }>(config.public.api + "passport/", {
+    let response = await $fetch<{ status: "success" | "error", code: string, data: { user_id: number } | null }>(apify("passport"), {
         method: "POST",
         body: JSON.stringify({
             passport: passport.value
