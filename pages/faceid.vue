@@ -162,8 +162,8 @@ onMounted(async () => {
     }
 
     async function send() {
-        isLoading.value = true;
         if (success && !photoTaken && tasksDone.value.task1 && tasksDone.value.task2) {
+            isLoading.value = true;
             photoTaken = true;
             webcamRunnig = false;
             let pic = takePicture(canvasImage, video, cameraWidth, cameraHeight);
@@ -216,8 +216,8 @@ onMounted(async () => {
                 }
                 clearTimeout(timeout);
             }
+            isLoading.value = true;
         }
-        isLoading.value = true;
     }
 
     async function predictWebcam() {
