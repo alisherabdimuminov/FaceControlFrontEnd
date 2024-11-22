@@ -29,10 +29,10 @@ const success = async (position: GeolocationPosition) => {
     let response = await $fetch<{ status: "success" | "error", code: string, data: object }>(apify("location"), {
         method: "POST",
         body: JSON.stringify({
-            // longitude: longitude.value,
-            // latitude: latitude.value,
-            latitude: "39.672863",
-            longitude: "66.912314",
+            longitude: longitude.value,
+            latitude: latitude.value,
+            // latitude: "39.672863",
+            // longitude: "66.912314",
         }),
         headers: {
             "Content-Type": "application/json",
