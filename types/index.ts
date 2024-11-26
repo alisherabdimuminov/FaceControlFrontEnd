@@ -39,6 +39,7 @@ export interface IEmployee {
 export interface IAttendance {
     uuid: string
     full_name: string
+    department: IDepartment
     attendance_access: "arrived" | "late" | "failed" | "did_not_come"
     attendance_access_time: string
     attendance_access_area: string

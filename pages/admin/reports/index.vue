@@ -147,6 +147,7 @@ watch(department, (newValue) => {
                     <Table class="whitespace-nowrap">
                         <TableHeader class="border-b">
                             <TableHead>Familiya Ism</TableHead>
+                            <TableHead>Bo'limi</TableHead>
                             <TableHead class="border-l text-center">Holati</TableHead>
                             <TableHead class="text-center">Vaqt</TableHead>
                             <TableHead class="border-l text-center">Holati</TableHead>
@@ -156,6 +157,7 @@ watch(department, (newValue) => {
                         <TableBody>
                             <TableRow v-for="a in attendance.filter((v) => v.attendance_access !== 'did_not_come')" >
                                 <TableCell>{{ a.full_name }}</TableCell>
+                                <TableCell>{{ a.department.name }}</TableCell>
                                 <TableCell class="border-l text-center">
                                     <span v-if="a.attendance_access === 'arrived'" class="text-green-500">Kelgan</span>
                                     <span v-else-if="a.attendance_access === 'failed'" class="text-orange-500">Xatolik</span>
