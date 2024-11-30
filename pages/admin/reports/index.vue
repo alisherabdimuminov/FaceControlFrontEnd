@@ -136,8 +136,14 @@ watch(department, (newValue) => {
                 </PopoverContent>
             </Popover>
         </div>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <div class="flex flex-col gap-3 col-span-2">
+        <div class="">
+            <Tabs default-value="kelganlar">
+                <TabsList>
+                    <TabsTrigger value="kelganlar">Kelganlar</TabsTrigger>
+                    <TabsTrigger value="kelmaganlar">Kelmaganlar</TabsTrigger>
+                </TabsList>
+                <TabsContent value="kelganlar">
+                    <div class="flex flex-col gap-3 col-span-2">
                 <p class="font-bold">
                     <span class="text-green-500">Kelganlar</span>
                     <span> / </span>
@@ -180,7 +186,9 @@ watch(department, (newValue) => {
                     </Table>
                 </div>
             </div>
-            <div class="flex flex-col gap-3">
+                </TabsContent>
+                <TabsContent value="kelmaganlar">
+                    <div class="flex flex-col gap-3">
                 <p class="text-red-500 font-bold">Kelmaganlar</p>
                 <div class="border rounded-md">
                     <Table>
@@ -197,6 +205,8 @@ watch(department, (newValue) => {
                     </Table>
                 </div>
             </div>
+                </TabsContent>
+            </Tabs>
         </div>
     </div>
 </template>
