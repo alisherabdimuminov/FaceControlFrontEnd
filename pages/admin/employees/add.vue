@@ -131,7 +131,7 @@ const addEmployee = async () => {
     let image = document.getElementById("image") as HTMLImageElement;
     let e = employee.value;
     form.append("address", e.address);
-    form.append("birth_date", e.birth_date);
+    form.append("birth_date", `${e.birth_date.split(".").at(-1)}-${e.birth_date.split(".").at(1)}-${e.birth_date.split(".").at(1)}`);
     form.append("city", e.city);
     form.append("country", e.country);
     form.append("department", e.department.id);
