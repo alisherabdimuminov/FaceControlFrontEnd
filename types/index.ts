@@ -47,6 +47,16 @@ export interface IAttendance {
     attendance_output_time: string
 }
 
+export interface IReport {
+    uuid: string
+    full_name: string
+    attendance_access: "arrived" | "late" | "failed" | "did_not_come"
+}
+
+export interface IReports {
+    [date: string]: IReport[]
+}
+
 export interface ICoordinate {
     latitude: string
     longitude: string

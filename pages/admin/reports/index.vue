@@ -149,7 +149,7 @@ watch(department, (newValue) => {
                     <span> / </span>
                     <span class="text-orange-500">Kechikganlar</span>
                 </p>
-                <div class="border rounded-md">
+                <div class="border rounded-md overflow-auto">
                     <Table class="whitespace-nowrap">
                         <TableHeader class="border-b">
                             <TableHead>Familiya Ism</TableHead>

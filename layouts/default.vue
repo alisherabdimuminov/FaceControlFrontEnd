@@ -142,36 +142,37 @@ onMounted(() => {
                     <p class="text-xl font-bold">{{ now.getDate() }} {{ now.toLocaleDateString('default', { month: 'long' }) }} {{ now.getFullYear() }}</p>
                 </div>
                 <div>
-                    <Popover>
-                        <PopoverTrigger>
-                            <Button variant="ghost" size="icon" class="relative">
-                                <LucideBell />
-                                <div class="absolute top-0 right-0 rounded-full bg-red-500 px-1.5">
-                                    {{ birthDates.length }}
-                                </div>
-                            </Button>
-                        </PopoverTrigger>
-                        <PopoverContent class="w-96">
-                            <div class="flex flex-col gap-2 divide-y">
-                                <div v-for="birthDate in birthDates" class="flex items-center justify-between w-full p-1">
-                                    <div class="flex items-center w-full flex-1 gap-2">
-                                        <img class="w-8 h-8 rounded-full" :src="$config.public.base + birthDate.image" alt="">
-                                        <div>
-                                            <p class="w-56 truncate text-sm">{{ birthDate.full_name }}</p>
-                                            <p class="w-56 truncate text-xs text-muted-foreground">{{ birthDate.department.name }}</p>
+                    <ClientOnly>
+                        <Popover>
+                            <PopoverTrigger>
+                                <Button variant="ghost" size="icon" class="relative">
+                                    <LucideBell />
+                                    <div class="absolute top-0 right-0 rounded-full bg-red-500 px-1.5">
+                                        {{ birthDates.length }}
+                                    </div>
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent class="w-96">
+                                <div class="flex flex-col gap-2 divide-y">
+                                    <div v-for="birthDate in birthDates" class="flex items-center justify-between w-full p-1">
+                                        <div class="flex items-center w-full flex-1 gap-2">
+                                            <img class="w-8 h-8 rounded-full" :src="$config.public.base + birthDate.image" alt="">
+                                            <div>
+                                                <p class="w-56 truncate text-sm">{{ birthDate.full_name }}</p>
+                                                <p class="w-56 truncate text-xs text-muted-foreground">{{ birthDate.department.name }}</p>
+                                            </div>
+                                        </div>
+                                        <div class="flex flex-col items-end w-fit gap-1">
+                                            <div class="w-2 h-2 bg-red-500 rounded-full"></div>
+                                            <p class="text-sm">{{ birthDate.birth_date }}</p>
                                         </div>
                                     </div>
-                                    <div class="flex flex-col items-end w-fit gap-1">
-                                        <div class="w-2 h-2 bg-red-500 rounded-full"></div>
-                                        <p class="text-sm">{{ birthDate.birth_date }}</p>
-                                    </div>
                                 </div>
-                            </div>
-                        </PopoverContent>
-                    </Popover>
-                    <DropdownMenu>
-                        <DropdownMenuTrigger>
-                            <Button variant="ghost" size="icon">
+                            </PopoverContent>
+                        </Popover>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger>
+                                <Button variant="ghost" size="icon">
                                 <LucideUser />
                             </Button>
                         </DropdownMenuTrigger>
@@ -202,6 +203,7 @@ onMounted(() => {
                             </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
+                </ClientOnly>
                 </div>
             </div>
             <ScrollArea class="h-[calc(100%-4rem)]">

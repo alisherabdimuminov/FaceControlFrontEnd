@@ -1,6 +1,8 @@
 
 <script setup lang="ts">
-import type { IEmployee, IResponse } from '~/types';
+import type { DateRange } from 'radix-vue'
+import { getLocalTimeZone, today, type DateValue } from '@internationalized/date'
+import type { IEmployee, IReport, IReports, IResponse } from '~/types';
 
 
 
@@ -12,6 +14,14 @@ const { user } = useAuth();
 const route = useRoute();
 
 const employees = ref<IEmployee[]>([]);
+const reports = ref<IReports>({});
+const end = today(getLocalTimeZone());
+const start = end.subtract({ days: 7 });
+const value = ref({
+    start,
+    end,
+}) as Ref<DateRange>
+
 
 const getEmployees = async (department: string) => {
     // isLoading.value = true;
@@ -26,42 +36,90 @@ const getEmployees = async (department: string) => {
     // isLoading.value = false;
 }
 
+const getReports = async (start: DateValue, end: DateValue) => {
+    let response = await $fetch<IResponse<string, IReports>>(apify("employees/reports"), {
+        method: "POST",
+        body: JSON.stringify({
+            "start_day": start.day,
+            "start_month": start.month,
+            "start_year": start.year,
+
+            "end_day": end.day,
+            "end_month": end.month,
+            "end_year": end.year,
+        }),
+        headers: {
+            "Authorization": `Token ${user.value?.token}`
+        }
+    });
+
+    if (response.status === "success") {
+        reports.value = response.data;
+    }
+}
+
+const handleUpdate = () => {
+    if (value.value.start && value.value.end) {
+        console.log(value.value.start?.day);
+        console.log(value.value.end?.day);
+        getReports(value.value.start, value.value.end);
+    }
+}
+
+const downloadReports = () => {
+    if (value.value.start && value.value.end) {
+        navigateTo({ path: apify("employees/reports/xlsx"), query: { department: route.params.slug.toString(), start_day: value.value.start.day, start_month: value.value.start.month, start_year: value.value.start.year, end_day: value.value.end.day, end_month: value.value.end.month, end_year: value.value.end.year } }, { external: true });
+    }
+}
+
 onMounted(() => {
     getEmployees(route.params.slug.toString());
+    if (value.value.start && value.value.end) {
+        console.log(value.value.start?.day);
+        console.log(value.value.end?.day);
+        getReports(value.value.start, value.value.end);
+    }
 });
 </script>
 
 <template>
     <div class="grid gap-3 p-5 md:p-10">
-        <Breadcrumb>
-            <BreadcrumbList>
-                <BreadcrumbItem>
-                    <BreadcrumbLink>
-                        <NuxtLink :to="{ name: 'admin' }">Bosh sahifa</NuxtLink>
-                    </BreadcrumbLink>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator />
-                <BreadcrumbItem>
-                    <BreadcrumbPage>
-                        Xodimlar
-                    </BreadcrumbPage>
-                </BreadcrumbItem>
-            </BreadcrumbList>
-        </Breadcrumb>
+        <ClientOnly>
+            <div class="flex justify-between items-center">
+                <Breadcrumb>
+                    <BreadcrumbList>
+                        <BreadcrumbItem>
+                            <BreadcrumbLink>
+                                <NuxtLink :to="{ name: 'admin' }">Bosh sahifa</NuxtLink>
+                            </BreadcrumbLink>
+                        </BreadcrumbItem>
+                        <BreadcrumbSeparator />
+                        <BreadcrumbItem>
+                            <BreadcrumbPage>
+                                Xodimlar
+                            </BreadcrumbPage>
+                        </BreadcrumbItem>
+                    </BreadcrumbList>
+                </Breadcrumb>
+                <Button @click="downloadReports">Yuklab olish</Button>
+            </div>
+        </ClientOnly>
+        <RangeCalendar v-model="value" class="rounded-md border" @update:model-value="handleUpdate" />
         <div class="relative overflow-x-auto">
             <table class="border-separate border-spacing-0 whitespace-nowrap table-fixed">
                 <thead class="">
                     <tr class="border">
                         <th class="sticky text-start p-2 border left-0 bg-background">Familiya, Ism va Sharifi</th>
-                        <th class="z-[-1] text-start p-2 border" v-for="_ in 30">{{ _ }}-11-2024</th>
-                        <th class="sticky right-0 text-start p-2 bg-background border">Jami</th>
+                        <th class="z-[-1] text-start p-2 border" v-for="_, date in reports">{{ date }}</th>
                     </tr>
                 </thead>
                 <tbody class="relative">
-                    <tr class="border hover:bg-accent/90" v-for="employee in employees">
+                    <tr class="border hover:bg-accent/90" v-for="employee, index in employees">
                         <td class="p-2 border sticky left-0 bg-background w-32 truncate">{{ employee.full_name }}</td>
-                        <td class="p-2 border text-center text-green-500 font-bold" v-for="_ in 30">8</td>
-                        <td class="sticky right-0 p-2 border bg-background text-center">345</td>
+                        <td class="p-2 border text-center font-bold" v-for="report, date in reports">
+                            <p class="text-green-500" v-if="report[index].attendance_access === 'arrived'">8</p>
+                            <p class="text-red-500" v-else>0</p>
+                        </td>
                     </tr>
                 </tbody>
             </table>
