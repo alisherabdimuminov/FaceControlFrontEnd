@@ -47,6 +47,8 @@ const getReports = async (start: DateValue, end: DateValue) => {
             "end_day": end.day,
             "end_month": end.month,
             "end_year": end.year,
+
+            "department": route.params.slug.toString()
         }),
         headers: {
             "Authorization": `Token ${user.value?.token}`
@@ -75,8 +77,6 @@ const downloadReports = () => {
 onMounted(() => {
     getEmployees(route.params.slug.toString());
     if (value.value.start && value.value.end) {
-        console.log(value.value.start?.day);
-        console.log(value.value.end?.day);
         getReports(value.value.start, value.value.end);
     }
 });
@@ -105,7 +105,7 @@ onMounted(() => {
             </div>
             <RangeCalendar v-model="value" class="rounded-md border" @update:model-value="handleUpdate" />
             <div class="relative overflow-x-auto">
-                <!-- <table class="border-separate border-spacing-0 whitespace-nowrap table-fixed">
+                <table class="border-separate border-spacing-0 whitespace-nowrap table-fixed">
                     <thead class="">
                         <tr class="border">
                             <th class="sticky text-start p-2 border left-0 bg-background">Familiya, Ism va Sharifi</th>
@@ -121,7 +121,7 @@ onMounted(() => {
                             </td>
                         </tr>
                     </tbody>
-                </table> -->
+                </table>
             </div>
         </ClientOnly>
     </div>
