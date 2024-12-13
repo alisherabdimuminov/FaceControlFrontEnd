@@ -105,24 +105,24 @@ onMounted(() => {
             </div>
             <RangeCalendar v-model="value" class="rounded-md border" @update:model-value="handleUpdate" />
             <div class="relative overflow-x-auto">
-                <table class="border-separate border-spacing-0 whitespace-nowrap table-fixed">
-                <thead class="">
-                    <tr class="border">
-                        <th class="sticky text-start p-2 border left-0 bg-background">Familiya, Ism va Sharifi</th>
-                        <th class="z-[-1] text-start p-2 border" v-for="_, date in reports">{{ date }}</th>
-                    </tr>
-                </thead>
-                <tbody class="relative">
-                    <tr class="border hover:bg-accent/90" v-for="employee, index in employees">
-                        <td class="p-2 border sticky left-0 bg-background w-32 truncate">{{ employee.full_name }}</td>
-                        <td class="p-2 border text-center font-bold" v-for="report, date in reports">
-                            <p class="text-green-500" v-if="report[index].attendance_access === 'arrived' || report[index].attendance_access === 'late'">8</p>
-                            <p class="text-red-500" v-else>0</p>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </ClientOnly>
+                <!-- <table class="border-separate border-spacing-0 whitespace-nowrap table-fixed">
+                    <thead class="">
+                        <tr class="border">
+                            <th class="sticky text-start p-2 border left-0 bg-background">Familiya, Ism va Sharifi</th>
+                            <th class="z-[-1] text-start p-2 border" v-for="_, date in reports">{{ date }}</th>
+                        </tr>
+                    </thead>
+                    <tbody class="relative">
+                        <tr class="border hover:bg-accent/90" v-for="employee, index in employees">
+                            <td class="p-2 border sticky left-0 bg-background w-32 truncate">{{ employee.full_name }}</td>
+                            <td class="p-2 border text-center font-bold" v-for="report, date in reports">
+                                <p class="text-green-500" v-if="report[index].attendance_access === 'arrived' || report[index].attendance_access === 'late'">8</p>
+                                <p class="text-red-500" v-else>0</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table> -->
+            </div>
+        </ClientOnly>
     </div>
 </template>
