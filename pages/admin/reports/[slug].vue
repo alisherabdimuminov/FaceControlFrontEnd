@@ -103,10 +103,9 @@ onMounted(() => {
                 </Breadcrumb>
                 <Button @click="downloadReports">Yuklab olish</Button>
             </div>
-        </ClientOnly>
-        <RangeCalendar v-model="value" class="rounded-md border" @update:model-value="handleUpdate" />
-        <div class="relative overflow-x-auto">
-            <table class="border-separate border-spacing-0 whitespace-nowrap table-fixed">
+            <RangeCalendar v-model="value" class="rounded-md border" @update:model-value="handleUpdate" />
+            <div class="relative overflow-x-auto">
+                <table class="border-separate border-spacing-0 whitespace-nowrap table-fixed">
                 <thead class="">
                     <tr class="border">
                         <th class="sticky text-start p-2 border left-0 bg-background">Familiya, Ism va Sharifi</th>
@@ -124,5 +123,6 @@ onMounted(() => {
                 </tbody>
             </table>
         </div>
+    </ClientOnly>
     </div>
 </template>
