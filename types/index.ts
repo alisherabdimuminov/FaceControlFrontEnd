@@ -51,6 +51,7 @@ export interface IReport {
     uuid: string
     full_name: string
     attendance_access: "arrived" | "late" | "failed" | "did_not_come"
+    attendance_access_time: string
 }
 
 export interface IReports {
