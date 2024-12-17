@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<!-- <script setup lang="ts">
 import { FaceLandmarker, FilesetResolver, type FaceLandmarkerResult, ObjectDetector,type ObjectDetectorResult } from "@mediapipe/tasks-vision";
 import { LucideCamera, LucideScanFace, LucideCircleCheckBig, LucideRefreshCcw, LucideRefreshCw, LucideScan } from "lucide-vue-next";
 import rodriguesRotationVectorFromMatrix from "@/utils/rodrigues";
@@ -402,4 +402,4 @@ onMounted(async () => {
     -moz-transform:rotateY(180deg);
     object-fit: cover;
 }
-</style>
+</style> -->
