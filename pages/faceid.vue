@@ -1,105 +1,31 @@
 <script setup lang="ts">
 import { FaceLandmarker, FilesetResolver, type FaceLandmarkerResult, ObjectDetector,type ObjectDetectorResult } from "@mediapipe/tasks-vision";
-import { LucideCamera, LucideScanFace, LucideCircleCheckBig, LucideRefreshCcw, LucideRefreshCw } from "lucide-vue-next";
 import rodriguesRotationVectorFromMatrix from "@/utils/rodrigues";
-import drawBorder from "@/utils/drawBorder";
-import takePicture from "~/utils/takePicture";
-import { toast } from "@/components/ui/toast";
-import { h as hu } from "vue";
+import { LucideRefreshCw } from "lucide-vue-next";
 
-
-let colorMode = useColorMode();
-colorMode.preference = "dark";
-const config = useRuntimeConfig();
-const route = useRoute();
-const passport = ref(route.query.passport);
-const isLoading = ref(true);
-
-if (passport.value === "") {
-    navigateTo("/");
-}
 
 definePageMeta({
     layout: "empty"
 });
-useHead({
-    title: "FaceID"
-})
 
-let video: HTMLVideoElement;
-let faceLandMarker: FaceLandmarker;
-let runningMode = ref<"VIDEO" | "IMAGE">("VIDEO");
-let enableWebcamButton: HTMLElement;
-let webcamRunnig = false;
+const route = useRoute();
+
+
+const isLoading = ref(true);
+const process = ref(true);
+let lastVideoTime = -1;
 let videoWidth = 400;
 let cameraWidth = 0;
 let cameraHeight = 0;
-let lastVideoTime = -1;
-let timeout: any = null;
-let results: FaceLandmarkerResult | null = null;
-let h = 0;
-let success = false;
-let photoTaken = false;
-let tasks = ref<{ direction: "left" | "right" | "top" | "bottom", translation: "Chapga" | "O'ngga" | "Tepaga" | "Pastga" }[][]>([
-    // left
-    [
-        { direction: "left", translation: "Chapga" },
-        { direction: "right", translation: "O'ngga" },
-   ],
-    [
-        { direction: "left", translation: "Chapga" },
-        { direction: "top", translation: "Tepaga" },
-    ],
-    [
-        { direction: "left", translation: "Chapga" },
-        { direction: "bottom", translation: "Pastga" },
-    ],
-    // right
-    [
-        { direction: "right", translation: "O'ngga" },
-        { direction: "left", translation: "Chapga" }
-    ],
-    [
-        { direction: "right", translation: "O'ngga" },
-        { direction: "top", translation: "Tepaga" },
-    ],
-    [
-        { direction: "right", translation: "O'ngga" },
-        { direction: "bottom", translation: "Pastga" },
-    ],
-    // top
-    [
-        { direction: "top", translation: "Tepaga" },
-        { direction: "left", translation: "Chapga" },
-    ],
-    [
-        { direction: "top", translation: "Tepaga" },
-        { direction: "right", translation: "O'ngga" },
-    ],
-    [
-        { direction: "top", translation: "Tepaga" },
-        { direction: "bottom", translation: "Pastga" }
-    ],
-    // bottom
-    [
-        { direction: "bottom", translation: "Pastga" },
-        { direction: "left", translation: "Chapga" },
-    ],
-    [
-        { direction: "bottom", translation: "Pastga" },
-        { direction: "right", translation: "O'ngga" },
-    ],
-    [
-        { direction: "bottom", translation: "Pastga" },
-        { direction: "top", translation: "Tepaga" },
-    ]
-]);
+let status = false;
+let centerText = ref("Kameraga ruxsat bering");
+let passport = route.query.passport || "";
+let reload = ref(false);
+let color = ref("white");
 
-let givenTasks = ref(tasks.value[Math.floor(Math.random() * tasks.value.length)]);
-let tasksDone = ref({
-    task1: false,
-    task2: false,
-});
+let faceLandMarker: FaceLandmarker;
+let results: FaceLandmarkerResult | null = null;
+
 
 async function createFaceLandmarker() {
     isLoading.value = true;
@@ -111,116 +37,88 @@ async function createFaceLandmarker() {
         },
         outputFaceBlendshapes: true,
         outputFacialTransformationMatrixes: true,
-        runningMode: runningMode.value,
+        runningMode: "VIDEO",
         numFaces: 10,
     });
     isLoading.value = false;
 }
 
+const reloadFunc = () => {
+    location.reload();
+}
+
+
+
 onMounted(async () => {
     await createFaceLandmarker();
-    video = document.getElementById("video") as HTMLVideoElement;
-    let canvasImage = document.getElementById("image") as HTMLCanvasElement;
-    enableWebcamButton = document.getElementById("button") as HTMLButtonElement;
-
-    const border = document.getElementById("border") as HTMLCanvasElement;
-    const borderContext = border.getContext("2d") as CanvasRenderingContext2D;
-
-    drawBorder(borderContext, "white");
-
-    function hasGetUserMedia() {
-        return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+    let windowWidth = window.innerWidth;
+    let windowHeight = window.innerHeight;
+    let canvas = document.getElementById("canvas") as HTMLCanvasElement;
+    let photo = document.getElementById("photo") as HTMLCanvasElement;
+    let video = document.getElementById("video") as HTMLVideoElement;
+    canvas.width = windowWidth;
+    canvas.height = windowHeight;
+    let context = canvas.getContext("2d");
+    if (context) {
+        drawBorder(context, windowWidth, windowHeight, "white");
     }
 
-    if (hasGetUserMedia()) {
-        enableWebcamButton?.addEventListener("click", enableCam);
-    } else {
-    }
-
-    function enableCam(event: Event) {
-        if (!faceLandMarker) {
-            return;
-        }
-        if (webcamRunnig === true) {
-            webcamRunnig = false;
-        } else {
-            webcamRunnig = true;
-        }
-
-        const constraints = {
-            video: true
-        }
-
-        navigator.mediaDevices.getUserMedia(constraints)
-            .then((stream) => {
-                video.srcObject = stream;
-                video.addEventListener("loadeddata", predictWebcam);
-                let settings = stream.getVideoTracks()[0].getSettings();
-                cameraWidth = settings.width || 0;
-                cameraHeight = settings.height || 0;
-            })
-    }
+    
+    navigator.mediaDevices.getUserMedia({ video: true })
+        .then((stream) => {
+            video.srcObject = stream;
+            video.addEventListener("loadeddata", predictWebcam);
+            let settings = stream.getVideoTracks()[0].getSettings();
+            cameraWidth = settings.width || 0;
+            cameraHeight = settings.height || 0;
+        });
 
     async function send() {
-        if (success && !photoTaken && tasksDone.value.task1 && tasksDone.value.task2) {
-            isLoading.value = true;
-            photoTaken = true;
-            webcamRunnig = false;
-            let pic = takePicture(canvasImage, video, cameraWidth, cameraHeight);
-            if (pic) {
-                let response = await $fetch<{ status: "success" | "error", code: string, data: boolean }>(config.public.api + "/faceid/", {
-                    method: "POST",
-                    body: JSON.stringify({
-                        "image": pic,
-                        "passport": passport.value,
-                    })
-                });
-                if (response.status === "success") {
-                    if (response.data === true) {
-                        enableWebcamButton.innerText = "Nazoratdan o'tdingiz";
-                        enableWebcamButton.setAttribute("disabled", "true");
-                        navigateTo({ name: "passed" });
-                    } else {
-                        enableWebcamButton.innerText = "Qayta urinish";
-                        enableWebcamButton.addEventListener("click", () => {
-                            location.reload();
-                        });
-                        toast({
-                            title: "Ogohlantirish",
-                            description: hu("p", { class: "text-red-500" }, "Kechirasiz, yuzlar mos kelmadi. Qaytadan urinib ko'ring")
-                        });
-                    }
-                } else {
-                    if (response.code === "201") {
-                        enableWebcamButton.innerText = "Siz davomatdan o'tgansiz.";
-                        navigateTo({ name: "passed" });
-                    } else if (response.code === "400") {
-                        enableWebcamButton.innerText = "Qayta urinish";
-                        enableWebcamButton.addEventListener("click", () => {
-                            location.reload();
-                        });
-                        toast({
-                            title: "Ogohlantirish",
-                            description: hu("p", { class: "text-red-500" }, "Kechirasiz, yuzlar mos kelmadi. Qaytadan urinib ko'ring")
-                        });
-                    } else if (response.code === "404") {
-                        toast({
-                            title: "Ogohlantirish",
-                            description: hu("p", { class: "text-red-500" }, "Kechirasiz, xodim topilmadi. Qaytadan urinib ko'ring")
-                        });
-                        enableWebcamButton.innerText = "Qayta urinish";
-                        enableWebcamButton.addEventListener("click", () =>  {
-                            navigateTo("/");
-                        });
-                    }
+        isLoading.value = true;
+        let image = takePicture(photo, video, cameraWidth, cameraHeight);
+        if (image) {
+            let response = await $fetch<{ status: "success" | "error", code: string, data: string }>(apify("faceid"), {
+                method: "POST",
+                body: JSON.stringify({
+                    "passport": passport,
+                    "image": image,
+                })
+            });
+
+            if (response.status === "error") {
+                if (response.code === "404") {
+                    centerText.value = "Xodim topilmadi";
+                    color.value = "red";
+                    reload.value = true;
+                } else if (response.code === "201") {
+                    centerText.value = "Siz davomatdan o'tgansiz.";
+                    color.value = "orange";
+                    navigateTo({ name: "passed" });
+                } else if (response.code === "300") {
+                    centerText.value = "Kechirasiz, siz jonli emassiz!!! Qaytadan urinib ko'ring.";
+                    color.value = "red";
+                    reload.value = true;
+                } else if (response.code === "400") {
+                    centerText.value = "Kechirasiz, Yuzni aniqlab bo'lmadi. Qaytadan urinib ko'ring.";
+                    color.value = "red";
+                    reload.value = true;
+                } else if (response.code === "402") {
+                    centerText.value = "Kechirasiz, Yuzlar mos kelmadi. Qaytadan urinib ko'ring.";
+                    color.value = "red";
+                    reload.value = true;
                 }
-                clearTimeout(timeout);
+            } else {
+                navigateTo({ name: "passed" });
             }
-            isLoading.value = true;
+
+            console.log(response);
         }
+        isLoading.value = false;
     }
 
+    
     async function predictWebcam() {
+        // console.log(faceLandMarker);
         const radio = video.videoHeight / video.videoWidth;
 
         let startTimeMS = performance.now();
@@ -259,17 +157,16 @@ onMounted(async () => {
 
                 if (x1 < cameraWidth / 6.0 || x1 > cameraWidth * 5 / 6 || y1 < cameraHeight / 6 || y1 > cameraHeight * 5 / 6 ||
                     x2 < cameraWidth / 6.0 || x2 > cameraWidth * 5 / 6 || y2 < cameraHeight / 6 || y2 > cameraHeight * 5 / 6) {
-                        drawBorder(borderContext, "red");
+                        drawBorder(context, windowWidth, windowHeight, "red");
                 } else {
-                    drawBorder(borderContext, "green");
-                    success = true;
+                    drawBorder(context, windowWidth, windowHeight, "green");
                 }
 
                 let scale = Math.max(Math.ceil(x2) - Math.ceil(x1), Math.ceil(y2) - Math.ceil(y1) / (videoWidth / 4));
 
                 if (scale < 1.9 || scale > 2.1) {
-                    drawBorder(borderContext, "red");
-                    success = false;
+                    drawBorder(context, windowWidth, windowHeight, "red");
+                    // console.log("Ortada turing")
                 }
 
                 results.facialTransformationMatrixes.forEach((element) => {
@@ -285,108 +182,93 @@ onMounted(async () => {
                     let roll = rodriguesVector[2];
 
                     if (yaw < -7) {
-                        drawBorder(borderContext, "red");
-                        success = false;
-                        if (givenTasks.value[0].direction === "right" && !tasksDone.value.task1) {
-                            tasksDone.value.task1 = true;
-                        }
-                        if (givenTasks.value[1].direction === "right" && tasksDone.value.task1) {
-                            tasksDone.value.task2 = true;
-                        }
+                        drawBorder(context, windowWidth, windowHeight, "red");
+                        // success = false;
                     } else if (yaw > 7) {
-                        drawBorder(borderContext, "red");
-                        success = false;
-                        if (givenTasks.value[0].direction === "left" && !tasksDone.value.task1) {
-                            tasksDone.value.task1 = true;
-                        }
-                        if (givenTasks.value[1].direction === "left" && tasksDone.value.task1) {
-                            tasksDone.value.task2 = true;
-                        }
+                        drawBorder(context, windowWidth, windowHeight, "red");
+                        // success = false;
                     } else if (pitch < -7) {
-                        drawBorder(borderContext, "red");
-                        success = false;
-                        if (givenTasks.value[0].direction === "top" && !tasksDone.value.task1) {
-                            tasksDone.value.task1 = true;
-                        }
-                        if (givenTasks.value[1].direction === "top" && tasksDone.value.task1) {
-                            tasksDone.value.task2 = true;
-                        }
-                        if (givenTasks.value[0].direction === "top" && !tasksDone.value.task1) {
-                            tasksDone.value.task1 = true;
-                        }
-                        if (givenTasks.value[1].direction === "top" && tasksDone.value.task1) {
-                            tasksDone.value.task2 = true;
-                        }
+                        drawBorder(context, windowWidth, windowHeight, "red");
+                        // success = false;
                     } else if (pitch > 7) {
-                        drawBorder(borderContext, "red");
-                        success = false;
-                        if (givenTasks.value[0].direction === "bottom" && !tasksDone.value.task1) {
-                            tasksDone.value.task1 = true;
-                        }
-                        if (givenTasks.value[1].direction === "bottom" && tasksDone.value.task1) {
-                            tasksDone.value.task2 = true;
-                        }
+                        drawBorder(context, windowWidth, windowHeight, "red");
+                        // success = false;
                     } else if (roll < -7) {
-                        drawBorder(borderContext, "red");
-                        success = false;
+                        drawBorder(context, windowWidth, windowHeight, "red");
+                        // success = false;
                     } else if (roll > 7) {
-                        drawBorder(borderContext, "red");
-                        success = false;
+                        drawBorder(context, windowWidth, windowHeight, "red");
+                        // success = false;
                     } else {
-                        success = true;
-                        drawBorder(borderContext, "green");
-                        timeout = setTimeout(send, 5000);
+                        // success = true;
+                        drawBorder(context, windowWidth, windowHeight, "green");
+                        centerText.value = "3 soniya to'g'riga qarab turing";
+                        setTimeout(() => {
+                            if (status !== true) {
+                                status = true;
+                                process.value = false;
+                                isLoading.value = true;
+                                console.log("shirq", status);
+                                send();
+                            }
+                        }, 3000);
                     }
                 });
             } else if (results.faceLandmarks.length >= 2) {
-                drawBorder(borderContext, "orange");
+                drawBorder(context, windowWidth, windowHeight, "orange");
+                centerText.value = "1 tadan ko'p odam aniqlandi";
             } else {
-                drawBorder(borderContext, "yellow");
+                drawBorder(context, windowWidth, windowHeight, "yellow");
+                centerText.value = "Odam aniqlanmadi. Kameraga qarang";
             }
         } else {
         }
 
-        if (webcamRunnig === true) {
+        if (process.value) {
             window.requestAnimationFrame(predictWebcam);
         } else {
-            video.pause();
-            video.src = "";
+            video.pause;
             if (video.srcObject) {
                 // @ts-ignore
                 video.srcObject.getTracks()[0].stop();
             }
         }
     }
+    
+    
+    watch(process, () => {
+        if (process.value) {
+            window.requestAnimationFrame(predictWebcam);
+        } else {
+            video.pause;
+            if (video.srcObject) {
+                // @ts-ignore
+                video.srcObject.getTracks()[0].stop();
+            }
+        }
+    });
+
 });
 
 </script>
 
 <template>
-    <div class="h-screen">
-        <div v-if="isLoading" class="z-50 fixed h-screen w-full flex items-center justify-center bg-background/70 bg-opacity-50">
-            <div>
-                <LucideRefreshCw class="text-sky-500 animate-spin" :size="40" />
-                <p>Kuting</p>
-            </div>
+    <div class="">
+        <div class="fixed top-0 left-0 w-full h-full flex flex-col items-center justify-center z-[-1]">
+            <p :class="'text-' + color + '-500'" class="text-3xl font-bold text-center">{{ centerText }}</p>
         </div>
-        <div v-else class="p-5 z-50">
-            <p class="font-bold text-3xl">FaceID {{ isLoading }}</p>
-            <span>1. Kamerani yoqish tugmasini bosing. 2. Quyidagi holatlarni kameraga qarab bajaring.</span>
-            <p class="flex items-center justify-center gap-3 text-center">1. {{ givenTasks[0].translation }} <LucideCircleCheckBig :color="tasksDone.task1 ? '#008000' : '#fff'" /> </p>
-            <p class="flex items-center justify-center gap-3 text-center">2. {{ givenTasks[1].translation }} <LucideCircleCheckBig :color="tasksDone.task2 ? '#008000' : '#fff'" /> </p>
-            <Button id="button" class="fixed gap-2 left-1/4 bottom-10">
-                <LucideCamera />
-                <span>Kamerni yoqish</span>
-            </Button>
-        </div>
-        <video class="fixed top-0 left-0 w-full h-full z-[-1]" id="video" autoplay playsinline></video>
-        <canvas  height="900" class="fixed top-0 w-full left-0 border z-[-1]" id="border"></canvas>
-        <canvas id="image" class="hidden"></canvas>
+        <Button v-if="reload" @click="reloadFunc" class="fixed bottom-10 left-[40%] z-50">Qayta urinish</Button>
+        <canvas id="canvas" class="fixed top-0 left-0 w-full h-full z-[-1]"></canvas>
+        <canvas id="photo" style="display: none;"></canvas>
+        <video id="video" class="fixed top-0 left-0 w-full h-full z-[-10]" autoplay playsinline loop ></video>
+    </div>
+    <div :class="isLoading ? 'flex' : 'hidden'" class="fixed top-0 left-0 w-full h-full flex items-center justify-center bg-accent/70">
+        <LucideRefreshCw class="animate-spin" :size="50" />
     </div>
 </template>
 
 <style>
-#video {
+video {
     transform: rotateY(180deg);
     -webkit-transform:rotateY(180deg);
     -moz-transform:rotateY(180deg);
