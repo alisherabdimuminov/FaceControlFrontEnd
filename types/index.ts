@@ -72,3 +72,11 @@ export interface IArea {
 export type TLoginError = 
     | "username_not_found"
     | "invalid_password"
+
+export interface IStatistic {
+    department: string
+    all: number
+    arrived: number
+    late: number
+    didnotcome: number
+}
