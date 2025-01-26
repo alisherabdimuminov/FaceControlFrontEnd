@@ -2,6 +2,7 @@
 import { FaceLandmarker, FilesetResolver, type FaceLandmarkerResult, ObjectDetector,type ObjectDetectorResult } from "@mediapipe/tasks-vision";
 import rodriguesRotationVectorFromMatrix from "@/utils/rodrigues";
 import { LucideRefreshCw } from "lucide-vue-next";
+import { toast } from "~/components/ui/toast";
 
 
 definePageMeta({
@@ -93,7 +94,11 @@ onMounted(async () => {
                 } else if (response.code === "201") {
                     centerText.value = "Siz davomatdan o'tgansiz.";
                     color.value = "orange";
-                    navigateTo({ name: "passed" });
+                    navigateTo('/');
+                    toast({
+                        title: "Xatolik",
+                        description: "Siz davotdan o'tgansiz yoki boshqa xodimni malumotlaridan foydalanyabsiz. Tekshirib qaytadan urinib ko'ring."
+                    })
                 } else if (response.code === "300") {
                     centerText.value = "Kechirasiz, siz jonli emassiz!!! Qaytadan urinib ko'ring.";
                     color.value = "red";
