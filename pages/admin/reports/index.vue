@@ -79,6 +79,18 @@ const updateDate = async (value: any) => {
     getAttendance(department.value);
 }
 
+
+const downloadWord = async () => {
+    let response = await $fetch<IResponse<string, string>>(apify("make_word"), {
+        method: "POST",
+        body: JSON.stringify({
+            "data": attendance.value.filter((v) => v.attendance_access === 'did_not_come').map(user => user.full_name).join("\n")
+        })
+    });
+    navigateTo(response.data, { external: true, open: { target: "_blank" } });
+}
+
+
 let interval: string | number | NodeJS.Timeout | undefined;
 
 onMounted(async() => {
@@ -103,7 +115,7 @@ watch(department, (newValue) => {
         <Breadcrumb>
             <BreadcrumbList>
                 <BreadcrumbItem>
-                    <BreadcrumbLink>
+                    <BreadcrumbLink as-child>
                         <NuxtLink :to="{ name: 'admin' }">Bosh sahifa</NuxtLink>
                     </BreadcrumbLink>
                 </BreadcrumbItem>
@@ -126,7 +138,7 @@ watch(department, (newValue) => {
                 </SelectContent>
             </Select>
             <Popover>
-                <PopoverTrigger>
+                <PopoverTrigger as-child>
                     <Button>
                         <LucideCalendar />
                     </Button>
@@ -152,14 +164,16 @@ watch(department, (newValue) => {
                         <div class="border rounded-md overflow-auto">
                             <Table class="whitespace-nowrap w-[calc(100%-3rem)]">
                                 <TableHeader class="border-b">
-                                    <TableHead>ID</TableHead>
-                                    <TableHead>Familiya Ism</TableHead>
-                                    <TableHead class="whitespace-wrap w-4">Bo'limi</TableHead>
-                                    <TableHead class="border-l text-center">Holati</TableHead>
-                                    <TableHead class="text-center">Vaqt</TableHead>
-                                    <TableHead class="border-l text-center">Holati</TableHead>
-                                    <TableHead class="border-r text-center">Vaqt</TableHead>
-                                    <TableHead>Bino</TableHead>
+                                    <TableRow>
+                                        <TableHead>ID</TableHead>
+                                        <TableHead>Familiya Ism</TableHead>
+                                        <TableHead class="whitespace-wrap w-4">Bo'limi</TableHead>
+                                        <TableHead class="border-l text-center">Holati</TableHead>
+                                        <TableHead class="text-center">Vaqt</TableHead>
+                                        <TableHead class="border-l text-center">Holati</TableHead>
+                                        <TableHead class="border-r text-center">Vaqt</TableHead>
+                                        <TableHead>Bino</TableHead>
+                                    </TableRow>
                                 </TableHeader>
                                 <TableBody>
                                     <TableRow v-for="a, index in attendance.filter((v) => v.attendance_access !== 'did_not_come')">
@@ -194,15 +208,20 @@ watch(department, (newValue) => {
                 <TabsContent value="kelmaganlar">
                     <div class="flex flex-col gap-3">
                         <p class="text-red-500 font-bold">Kelmaganlar</p>
+                        <Button @click="downloadWord">Yuklab olish</Button>
                         <div class="border rounded-md">
                             <Table>
                                 <TableHeader class="border-b">
-                                    <TableHead>Familiya Ism</TableHead>
-                                    <TableHead>Holati</TableHead>
+                                    <TableRow>
+                                        <TableHead>Familiya Ism</TableHead>
+                                        <TableHead>Bo'lim</TableHead>
+                                        <TableHead>Holati</TableHead>
+                                    </TableRow>
                                 </TableHeader>
                                 <TableBody>
                                     <TableRow v-for="a in attendance.filter((v) => v.attendance_access === 'did_not_come')">
                                         <TableCell>{{ a.full_name }}</TableCell>
+                                        <TableCell>{{ a.department ? a.department.name : "" }}</TableCell>
                                         <TableCell>Kelmagan</TableCell>
                                     </TableRow>
                                 </TableBody>

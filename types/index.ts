@@ -4,6 +4,12 @@ export interface IResponse<TCode, IData>{
     data: IData
 }
 
+export interface IWorkingTime {
+    name: string
+    start: string
+    end: string
+}
+
 export interface IUser {
     username: string
     first_name: string
@@ -26,7 +32,7 @@ export interface IEmployee {
     department: IDepartment
     position: string
     gender: "male" | "female"
-    working_time: string
+    working_time: IWorkingTime
     birth_date: string
     image: string
     country: string
