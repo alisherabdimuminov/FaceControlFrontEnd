@@ -153,6 +153,7 @@ watch(department, (newValue) => {
                 <TabsList>
                     <TabsTrigger value="kelganlar">Kelganlar</TabsTrigger>
                     <TabsTrigger value="kechqolganlar">Kech qolganlar</TabsTrigger>
+                    <TabsTrigger value="xatoliklar">Xatoliklar</TabsTrigger>
                     <TabsTrigger value="kelmaganlar">Kelmaganlar</TabsTrigger>
                 </TabsList>
                 <TabsContent value="kelganlar" class=" overflow-auto">
@@ -244,6 +245,51 @@ watch(department, (newValue) => {
                                             <span class="text-green-500" v-if="a.attendance_output === 'at_work'">Ishda</span>
                                             <span class="text-orange-500" v-else-if="a.attendance_output === 'failed'">Xatolik</span>
                                             <span class="text-green-500" v-else-if="a.attendance_output === 'gone'">Ketgan</span>
+                                        </TableCell>
+                                        <TableCell class="border-r text-center">{{ a.attendance_output_time }}</TableCell>
+                                        <TableCell>{{ a.attendance_access_area }}</TableCell>
+                                    </TableRow>
+                                </TableBody>
+                            </Table>
+                        </div>
+                    </div>
+                </TabsContent>
+                <TabsContent value="xatoliklar" class=" overflow-auto">
+                    <div class="grid gap-3 col-span-2">
+                        <p class="font-bold">
+                            <span class="text-orange-500">Xatoliklar</span>
+                        </p>
+                        <div class="border rounded-md overflow-auto">
+                            <Table class="whitespace-nowrap w-[calc(100%-3rem)]">
+                                <TableHeader class="border-b">
+                                    <TableRow>
+                                        <TableHead>ID</TableHead>
+                                        <TableHead>Familiya Ism</TableHead>
+                                        <TableHead class="whitespace-wrap w-4">Bo'limi</TableHead>
+                                        <TableHead class="border-l text-center">Holati</TableHead>
+                                        <TableHead class="text-center">Vaqt</TableHead>
+                                        <TableHead class="border-l text-center">Holati</TableHead>
+                                        <TableHead class="border-r text-center">Vaqt</TableHead>
+                                        <TableHead>Bino</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    <TableRow v-for="a, index in attendance.filter((v) => v.attendance_access === 'failed')">
+                                        <TableCell>{{ index+1 }}</TableCell>
+                                        <TableCell>{{ a.full_name }}</TableCell>
+                                        <TableCell>
+                                            <p class="w-64 truncate">{{ a.department.name }}</p>    
+                                        </TableCell>
+                                        <TableCell class="border-l text-center">
+                                            <span class="text-orange-500">Xatolik</span>
+                                        </TableCell>
+                                        <TableCell class="text-center font-semibold">
+                                            <span v-if="a.attendance_access === 'arrived'" class="text-green-500">{{ a.attendance_access_time }}</span>
+                                            <span v-else-if="a.attendance_access === 'failed'" class="text-orange-500">{{ a.attendance_access_time }}</span>
+                                            <span v-else-if="a.attendance_access === 'late'" class="text-orange-500">{{ a.attendance_access_time }}</span>
+                                        </TableCell>
+                                        <TableCell class="border-l text-center">
+                                            <span class="text-orange-500">Xatolik</span>
                                         </TableCell>
                                         <TableCell class="border-r text-center">{{ a.attendance_output_time }}</TableCell>
                                         <TableCell>{{ a.attendance_access_area }}</TableCell>
